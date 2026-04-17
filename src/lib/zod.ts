@@ -5,6 +5,9 @@ export const ContentSchema = z.object({
   description: z.string().optional(),
   type: z.enum(['VIDEO', 'ARTICLE']),
   slug: z.string().min(1, 'Slug is required').regex(/^[a-z0-9-]+$/, 'Invalid slug format'),
+  videoUrl: z.string().url().optional(),
+  thumbnailUrl: z.string().url().optional(),
+  category: z.string().optional(),
 });
 
 export const PaginationSchema = z.object({

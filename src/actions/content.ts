@@ -153,6 +153,9 @@ export async function createContent(formData: FormData, userId: string) {
     description: formData.get('description'),
     type: formData.get('type'),
     slug: formData.get('slug'),
+    videoUrl: formData.get('videoUrl'),
+    thumbnailUrl: formData.get('thumbnailUrl'),
+    category: formData.get('category'),
   });
 
   try {

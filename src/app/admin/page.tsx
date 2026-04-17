@@ -12,6 +12,8 @@ interface ContentItem {
   slug: string;
   viewCount: number;
   videoUrl?: string;
+  thumbnailUrl?: string;
+  category?: string;
   createdAt: string;
 }
 
@@ -23,7 +25,9 @@ export default function AdminDashboard() {
     description: '',
     type: 'ARTICLE' as 'VIDEO' | 'ARTICLE',
     slug: '',
-    videoUrl: ''
+    videoUrl: '',
+    thumbnailUrl: '',
+    category: ''
   });
   const [message, setMessage] = useState('');
 
@@ -52,6 +56,9 @@ export default function AdminDashboard() {
       formDataObj.append('description', formData.description);
       formDataObj.append('type', formData.type);
       formDataObj.append('slug', formData.slug);
+      formDataObj.append('videoUrl', formData.videoUrl);
+      formDataObj.append('thumbnailUrl', formData.thumbnailUrl);
+      formDataObj.append('category', formData.category);
 
       await createContent(formDataObj, 'admin-user-id');
       
@@ -61,7 +68,9 @@ export default function AdminDashboard() {
         description: '',
         type: 'ARTICLE',
         slug: '',
-        videoUrl: ''
+        videoUrl: '',
+        thumbnailUrl: '',
+        category: ''
       });
       
       fetchContent();
@@ -185,6 +194,36 @@ export default function AdminDashboard() {
                   />
                 </div>
               )}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Thumbnail URL
+                </label>
+                <input
+                  type="url"
+                  value={formData.thumbnailUrl}
+                  onChange={(e) => setFormData(prev => ({ ...prev, thumbnailUrl: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                  placeholder="https://example.com/thumbnail.jpg"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Category
+                </label>
+                <select
+                  value={formData.category}
+                  onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                >
+                  <option value="">Select a category</option>
+                  <option value="frontend">Frontend</option>
+                  <option value="backend">Backend</option>
+                  <option value="devops">DevOps</option>
+                  <option value="ai">AI</option>
+                </select>
+              </div>
 
               <button
                 type="submit"

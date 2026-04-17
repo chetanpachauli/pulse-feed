@@ -17,6 +17,8 @@ interface ContentItem {
   slug: string;
   viewCount: number;
   videoUrl?: string;
+  thumbnailUrl?: string;
+  category?: string;
   createdAt: string;
   engagements: Array<{ userId: string; type: string }>;
   _count: {
@@ -282,6 +284,17 @@ function ContentCard({ content }: ContentCardProps) {
             </div>
           </div>
           <div className="flex items-center space-x-2">
+            {content.category && (
+              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                content.category === 'frontend' ? 'bg-blue-100 text-blue-800' :
+                content.category === 'backend' ? 'bg-green-100 text-green-800' :
+                content.category === 'devops' ? 'bg-orange-100 text-orange-800' :
+                content.category === 'ai' ? 'bg-purple-100 text-purple-800' :
+                'bg-gray-100 text-gray-800'
+              }`}>
+                {content.category}
+              </span>
+            )}
             <span className="text-sm text-gray-500">
               {content.viewCount} views
             </span>
@@ -309,6 +322,7 @@ function ContentCard({ content }: ContentCardProps) {
               contentId={content.id}
               userId={currentUserId}
               videoUrl={content.videoUrl}
+              thumbnailUrl={content.thumbnailUrl}
               initialProgress={content.progress}
             />
           </div>

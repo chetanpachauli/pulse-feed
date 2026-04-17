@@ -32,6 +32,8 @@ model Content {
   slug        String      @unique
   viewCount   Int         @default(0)
   videoUrl    String?     @default("https://w3schools.com/html/mov_bbb.mp4")
+  thumbnailUrl String?
+  category    String?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   
