@@ -5,7 +5,7 @@ import { useDebouncedProgress } from '~/hooks/useDebouncedProgress';
 
 // Helper function to validate if a YouTube thumbnail URL is likely to work
 const getValidThumbnailUrl = (thumbnailUrl?: string): string => {
-  if (!thumbnailUrl) return 'https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=500&q=80';
+  if (!thumbnailUrl) return 'https://picsum.photos/seed/default/600/400';
   
   // Check if it's a YouTube thumbnail with a dummy video ID
   if (thumbnailUrl.includes('i.ytimg.com/vi/')) {
@@ -24,7 +24,7 @@ const getValidThumbnailUrl = (thumbnailUrl?: string): string => {
        'AG1AzZoE1hs', 'ysEN5RaKO', 'sEAyggVL9tw', '4WjtQjPQGIs', 'erEgovG9WBs',
        'GxmfcnU3feo', 'QaU6gEtOwyE'].includes(videoId)
     )) {
-      return 'https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=500&q=80';
+      return `https://picsum.photos/seed/${videoId}/600/400`;
     }
   }
   
