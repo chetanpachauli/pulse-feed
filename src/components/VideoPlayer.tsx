@@ -3,9 +3,44 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDebouncedProgress } from '~/hooks/useDebouncedProgress';
 
+// Helper function to extract keywords from video title
+const extractKeywords = (title?: string): string => {
+  if (!title) return 'coding,programming';
+  
+  // Common tech/coding keywords to look for
+  const techKeywords = [
+    'react', 'javascript', 'typescript', 'python', 'node', 'docker', 'aws', 'kubernetes',
+    'mongodb', 'postgresql', 'api', 'rest', 'graphql', 'nextjs', 'vue', 'angular',
+    'flutter', 'swift', 'android', 'ios', 'devops', 'ci', 'cd', 'git', 'github',
+    'blockchain', 'webassembly', 'security', 'performance', 'testing', 'design',
+    'frontend', 'backend', 'fullstack', 'database', 'cloud', 'serverless',
+    'machine', 'learning', 'ml', 'ai', 'data', 'science', 'algorithm',
+    'css', 'html', 'web', 'development', 'code', 'programming', 'software',
+    'engineering', 'architecture', 'microservices', 'system', 'design', 'patterns'
+  ];
+  
+  // Split title into words and find tech keywords
+  const words = title.toLowerCase().split(/\s+/);
+  const foundKeywords = words.filter(word => 
+    techKeywords.some(keyword => word.includes(keyword))
+  );
+  
+  // Take first 3 keywords, fallback to generic coding terms
+  if (foundKeywords.length >= 3) {
+    return foundKeywords.slice(0, 3).join(',');
+  } else if (foundKeywords.length > 0) {
+    return [...foundKeywords, 'coding', 'programming'].slice(0, 3).join(',');
+  }
+  
+  return 'coding,programming,technology';
+};
+
 // Helper function to validate if a YouTube thumbnail URL is likely to work
-const getValidThumbnailUrl = (thumbnailUrl?: string): string => {
-  if (!thumbnailUrl) return 'https://picsum.photos/seed/default/600/400';
+const getValidThumbnailUrl = (thumbnailUrl?: string, videoTitle?: string): string => {
+  if (!thumbnailUrl) {
+    const keywords = extractKeywords(videoTitle);
+    return `https://source.unsplash.com/featured/?${keywords},600x400`;
+  }
   
   // Check if it's a YouTube thumbnail with a dummy video ID
   if (thumbnailUrl.includes('i.ytimg.com/vi/')) {
@@ -24,7 +59,8 @@ const getValidThumbnailUrl = (thumbnailUrl?: string): string => {
        'AG1AzZoE1hs', 'ysEN5RaKO', 'sEAyggVL9tw', '4WjtQjPQGIs', 'erEgovG9WBs',
        'GxmfcnU3feo', 'QaU6gEtOwyE'].includes(videoId)
     )) {
-      return `https://picsum.photos/seed/${videoId}/600/400`;
+      const keywords = extractKeywords(videoTitle);
+      return `https://source.unsplash.com/featured/?${keywords},600x400`;
     }
   }
   
@@ -36,13 +72,14 @@ interface VideoPlayerProps {
   userId: string;
   videoUrl?: string;
   thumbnailUrl?: string;
+  title?: string;
   initialProgress?: {
     lastPosition: number;
     isCompleted: boolean;
   };
 }
 
-export function VideoPlayer({ contentId, userId, videoUrl, thumbnailUrl, initialProgress }: VideoPlayerProps) {
+export function VideoPlayer({ contentId, userId, videoUrl, thumbnailUrl, title, initialProgress }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [hasError, setHasError] = useState(false);
@@ -119,7 +156,7 @@ export function VideoPlayer({ contentId, userId, videoUrl, thumbnailUrl, initial
   
   // If no videoUrl, show thumbnail with message
   if (!videoUrl) {
-    const validThumbnailUrl = getValidThumbnailUrl(thumbnailUrl);
+    const validThumbnailUrl = getValidThumbnailUrl(thumbnailUrl, title);
     
     return (
       <div className="relative w-full bg-gray-900 rounded-lg overflow-hidden aspect-video">
@@ -142,7 +179,7 @@ export function VideoPlayer({ contentId, userId, videoUrl, thumbnailUrl, initial
 
   // Show error state with thumbnail fallback
   if (hasError) {
-    const validThumbnailUrl = getValidThumbnailUrl(thumbnailUrl);
+    const validThumbnailUrl = getValidThumbnailUrl(thumbnailUrl, title);
     
     return (
       <div className="relative w-full bg-gray-900 rounded-lg overflow-hidden aspect-video">
@@ -169,7 +206,7 @@ export function VideoPlayer({ contentId, userId, videoUrl, thumbnailUrl, initial
       <div className="relative w-full bg-black rounded-lg overflow-hidden aspect-video">
         {/* Thumbnail background */}
         {showPlayOverlay && (() => {
-          const validThumbnailUrl = getValidThumbnailUrl(thumbnailUrl);
+          const validThumbnailUrl = getValidThumbnailUrl(thumbnailUrl, title);
           return (
             <img 
               src={validThumbnailUrl} 
@@ -216,7 +253,7 @@ export function VideoPlayer({ contentId, userId, videoUrl, thumbnailUrl, initial
   return (
     <div className="relative w-full bg-black rounded-lg overflow-hidden aspect-video">
       {showPlayOverlay && (() => {
-        const validThumbnailUrl = getValidThumbnailUrl(thumbnailUrl);
+        const validThumbnailUrl = getValidThumbnailUrl(thumbnailUrl, title);
         return (
           <img 
             src={validThumbnailUrl} 
