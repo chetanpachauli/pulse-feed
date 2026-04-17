@@ -77,74 +77,6 @@ export async function toggleLike(contentId: string, userId: string) {
   }
 }
 
-// Cursor-based pagination
-export async function getContentFeed(cursor?: string, take: number = 20) {
-  const validatedInput = PaginationSchema.parse({ cursor, take });
-  
-  try {
-    const content = await prisma.content.findMany({
-      where: {},
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: validatedInput.take + 1, // Take one extra to check if there's more
-      cursor: cursor ? { id: cursor } : undefined,
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        type: true,
-        slug: true,
-        viewCount: true,
-        videoUrl: true,
-        createdAt: true,
-        engagements: {
-          select: {
-            userId: true,
-            type: true,
-          },
-        },
-        progress: {
-          where: {
-            userId: 'demo-user-id',
-          },
-          select: {
-            lastPosition: true,
-            isCompleted: true,
-          },
-        },
-        _count: {
-          select: {
-            engagements: {
-              where: {
-                type: 'LIKE',
-              },
-            },
-          },
-        },
-      },
-    });
-
-    const hasMore = content.length > validatedInput.take;
-    const items = hasMore ? content.slice(0, -1) : content;
-    const nextCursor = hasMore ? items[items.length - 1].id : null;
-
-    // Transform progress data to match expected structure
-    const transformedItems = items.map((item: any) => ({
-      ...item,
-      progress: item.progress.length > 0 ? item.progress[0] : undefined,
-    }));
-
-    return {
-      items: transformedItems,
-      nextCursor,
-      hasMore,
-    };
-  } catch (error) {
-    console.error('Error fetching content feed:', error);
-    throw new Error('Failed to fetch content');
-  }
-}
 
 // Admin content creation
 export async function createContent(formData: FormData, userId: string) {
@@ -291,5 +223,43 @@ export async function updateProgress(contentId: string, userId: string, lastPosi
     console.error('Error updating progress:', error);
     // Don't throw error to prevent breaking the video player
     return null;
+  }
+}
+
+// Cursor-based pagination
+export async function getContentFeed(cursor?: string, limit: number = 20) {
+  try {
+    const content = await prisma.content.findMany({
+      take: limit,
+      skip: cursor ? 1 : undefined,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        engagements: {
+          where: {
+            type: 'LIKE'
+          }
+        },
+        progress: {
+          where: {
+            userId: 'demo-user-id'
+          }
+        }
+      }
+    });
+    
+    // Force fresh data by adding timestamp to prevent caching
+    revalidatePath('/');
+    
+    return {
+      items: content.map((item: any) => ({
+        ...item,
+        progress: item.progress?.length > 0 ? item.progress[0] : undefined,
+      })),
+      nextCursor: content.length > limit ? content[content.length - 1].id : null,
+      hasMore: content.length > limit,
+    };
+  } catch (error) {
+    console.error('Error fetching content feed:', error);
+    throw new Error('Failed to fetch content');
   }
 }

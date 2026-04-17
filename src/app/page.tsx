@@ -1,6 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useTransition, useRef, useCallback } from 'react';
+
+// Force dynamic rendering and disable caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 import { getContentFeed } from '~/actions/content';
 import { ContentCardSkeleton } from '~/components/SkeletonLoader';
 import { LikeButton } from '~/components/LikeButton';
