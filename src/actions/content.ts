@@ -226,37 +226,45 @@ export async function updateProgress(contentId: string, userId: string, lastPosi
   }
 }
 
-// Cursor-based pagination
+// Cursor-based pagination using API route
 export async function getContentFeed(cursor?: string, limit: number = 20) {
   try {
-    const content = await prisma.content.findMany({
-      take: limit,
-      skip: cursor ? 1 : undefined,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        engagements: {
-          where: {
-            type: 'LIKE'
-          }
-        },
-        progress: {
-          where: {
-            userId: 'demo-user-id'
-          }
-        }
-      }
+    // Build URL with pagination parameters
+    const params = new URLSearchParams();
+    if (cursor) params.append('cursor', cursor);
+    params.append('limit', limit.toString());
+    
+    const baseUrl = process.env.NODE_ENV === 'production' 
+      ? process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+      : 'http://localhost:3000';
+    
+    const response = await fetch(`${baseUrl}/api/content?${params}`, {
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
     
-    // Force fresh data by adding timestamp to prevent caching
-    revalidatePath('/');
-    
+    // Add mock engagements and progress for demo purposes
+    const itemsWithEngagements = data.items.map((item: any) => ({
+      ...item,
+      engagements: [], // Empty engagements for demo
+      _count: {
+        engagements: 0,
+      },
+      progress: undefined,
+    }));
+
     return {
-      items: content.map((item: any) => ({
-        ...item,
-        progress: item.progress?.length > 0 ? item.progress[0] : undefined,
-      })),
-      nextCursor: content.length > limit ? content[content.length - 1].id : null,
-      hasMore: content.length > limit,
+      items: itemsWithEngagements,
+      nextCursor: data.nextCursor,
+      hasMore: data.hasMore,
     };
   } catch (error) {
     console.error('Error fetching content feed:', error);
