@@ -1,11 +1,30 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '~/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const cursor = searchParams.get('cursor');
     const limit = parseInt(searchParams.get('limit') || '20');
+
+    // Check if database is available (especially for build time)
+    try {
+      // Test database connection
+      await prisma.$queryRaw`SELECT 1`;
+    } catch (dbError) {
+      console.error('Database connection failed:', dbError);
+      return NextResponse.json(
+        { 
+          error: 'Database temporarily unavailable',
+          items: [],
+          nextCursor: null,
+          hasMore: false 
+        },
+        { status: 503 }
+      );
+    }
 
     // Get content with cursor-based pagination
     const content = await prisma.content.findMany({
@@ -41,7 +60,12 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Error fetching content:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch content' },
+      { 
+        error: 'Failed to fetch content',
+        items: [],
+        nextCursor: null,
+        hasMore: false 
+      },
       { status: 500 }
     );
   }

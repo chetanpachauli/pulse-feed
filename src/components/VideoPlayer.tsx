@@ -83,6 +83,7 @@ export function VideoPlayer({ contentId, userId, videoUrl, thumbnailUrl, title, 
   const videoRef = useRef<HTMLVideoElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [hasError, setHasError] = useState(false);
+  const [hasThumbnailError, setHasThumbnailError] = useState(false);
   const [showPlayOverlay, setShowPlayOverlay] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   
@@ -152,6 +153,10 @@ export function VideoPlayer({ contentId, userId, videoUrl, thumbnailUrl, title, 
     setIsPlaying(true);
   };
 
+  const handleImageError = () => {
+    setHasThumbnailError(true);
+  };
+
   const isYouTubeVideo = videoUrl && videoUrl.includes('youtube.com/embed/');
   
   // If no videoUrl, show thumbnail with message
@@ -164,6 +169,8 @@ export function VideoPlayer({ contentId, userId, videoUrl, thumbnailUrl, title, 
           src={validThumbnailUrl} 
           alt="Video thumbnail" 
           className="w-full h-full object-cover"
+          loading="lazy"
+          onError={handleImageError}
         />
         <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
           <div className="text-center text-white">
@@ -187,6 +194,8 @@ export function VideoPlayer({ contentId, userId, videoUrl, thumbnailUrl, title, 
           src={validThumbnailUrl} 
           alt="Video thumbnail" 
           className="w-full h-full object-cover"
+          loading="lazy"
+          onError={handleImageError}
         />
         <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
           <div className="text-center text-white">
@@ -212,6 +221,8 @@ export function VideoPlayer({ contentId, userId, videoUrl, thumbnailUrl, title, 
               src={validThumbnailUrl} 
               alt="Video thumbnail" 
               className="w-full h-full object-cover"
+              loading="lazy"
+              onError={handleImageError}
             />
           );
         })()}
@@ -259,6 +270,8 @@ export function VideoPlayer({ contentId, userId, videoUrl, thumbnailUrl, title, 
             src={validThumbnailUrl} 
             alt="Video thumbnail" 
             className="w-full h-full object-cover"
+            loading="lazy"
+            onError={handleImageError}
           />
         );
       })()}
